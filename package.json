@@ -1,6 +1,6 @@
 {
   "name": "@randy5235/pg-migrations",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Tool to run postgres migrations ",
   "main": "index.js",
   "author": "Randy Wressell <randy5235@gmail.com>",
