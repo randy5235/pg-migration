@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS patch_history (
+    id SERIAL PRIMARY KEY,
+    filename TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
