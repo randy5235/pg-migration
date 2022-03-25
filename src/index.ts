@@ -1,11 +1,11 @@
 'use strict';
 
-const path = require('path');
-const pgp = require('pg-promise')();
+import path from 'path';
+import pgPromise from 'pg-promise';
+import { readdir } from 'fs/promises';
+import { IClient } from 'pg-promise/typescript/pg-subset';
 
-const { QueryFile } = require('pg-promise');
-const { readdir } = require('fs/promises');
-
+const pgp = pgPromise({});
 const config = {
   host: 'localhost', // 'localhost' is the default;
   port: 5432, // 5432 is the default;
@@ -51,35 +51,38 @@ const getFiles = async () => {
   }
 };
 
-const getHistory = async (db) => {
+const getHistory = async (db: pgPromise.IDatabase<{}, IClient>): Promise<string[]> => {
   try {
     const patchHistory = await db.query(getHistorySQL);
-    return patchHistory.map(element => element.filename);
-  } catch (error) {
+    return patchHistory.map((element: { filename: any; }) => element.filename);
+  } catch (error: any) {
     if (error.message.includes("does not exist")) {
       return [];
+    } else {
+      throw Error('An error has occurred');
     }
   }
 };
 
-const applyPatchAndUpdateHistory = async (fileList) => {
-  try {
-    for (let i = 0; i < fileList.length; i++) {
-      const gf = new QueryFile(`${sqlDir}${fileList[i]}`);
-      db.tx(async db => {
+const applyPatchAndUpdateHistory = async (fileList: string[]) => {
+  for (let i = 0; i < fileList.length; i++) {
+      try {
+      const gf = new pgp.QueryFile(`${sqlDir}${fileList[i]}`);
+      db.tx(async (db) => {
         if (fileList[i] !== 'migration_history.sql') {
           await db.query('SELECT filename FROM patch_history');
         }
         await db.query(gf);
         await db.query(`INSERT INTO patch_history (filename) VALUES ('${fileList[i]}')`);
       }).then(() => console.log(`Successfully Applied patch ${fileList[i]}`));
+    } catch {
+      throw Error(`Error applying ${fileList[i]} patch`);
     }
-  } catch (error) {
-    throw Error(`Error applying ${fileList[i]} patch`);
   }
 };
 
-const compare = (dbHistory, sqlPatches) => {
+const compare = (dbHistory: string[], sqlPatches: string[]) => {
+  let neededPatches:string[] = [];
   if (dbHistory.length > sqlPatches.length) {
     throw Error(`Current patch_history: ${dbHistory} is longer than available patches ${sqlPatches}`);
   } else if (dbHistory.length === sqlPatches.length) {
@@ -87,32 +90,34 @@ const compare = (dbHistory, sqlPatches) => {
       if (dbHistory[i] !== sqlPatches[i]) {
         throw Error(`Patches are missing or in wrong order ${dbHistory[i]}: ${sqlPatches[i]}`);
       }
-      return [];
+      return neededPatches;
     }
-  } else {
-    let neededPatches = [];
-    for (let i = 0; i < sqlPatches.length; i++) {
-      if (dbHistory[i] && dbHistory[i] !== sqlPatches[i]) {
-        throw Error(`Patches are missing or in wrong order ${dbHistory[i]}: ${sqlPatches[i]}`);
-      } else if (!dbHistory[i]) {
-        neededPatches.push(sqlPatches[i]);
-      }
-    }
-    return neededPatches;
   }
+  for (let i = 0; i < sqlPatches.length; i++) {
+    if (dbHistory[i] && dbHistory[i] !== sqlPatches[i]) {
+      throw Error(`Patches are missing or in wrong order ${dbHistory[i]}: ${sqlPatches[i]}`);
+    } else if (!dbHistory[i]) {
+      neededPatches.push(sqlPatches[i]);
+    }
+  }
+  return neededPatches;
 };
 
-async function main() {
-  const existingPatches = await getHistory(db);
-  const getPatches = await getFiles();
-  const neededPatches = compare(existingPatches, getPatches);
-
-  if (neededPatches.length > 0) {
-    console.info("Found unapplied patches: ", neededPatches);
-    await applyPatchAndUpdateHistory(neededPatches);
-  } else {
-    console.info("Did not find any new SQL migrations or patches");
+async function main(db: pgPromise.IDatabase<{}, IClient>) {
+  try {
+    const existingPatches = await getHistory(db);
+    const getPatches = await getFiles();
+    const neededPatches = compare(existingPatches, getPatches);
+    
+    if (neededPatches.length > 0) {
+      console.info("Found unapplied patches: ", neededPatches);
+      await applyPatchAndUpdateHistory(neededPatches);
+    } else {
+      console.info("Did not find any new SQL migrations or patches");
+    }
+  } catch (error) {
+    throw error;
   }
 }
 
-main();
+main(db);

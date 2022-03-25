@@ -1,1 +1,3 @@
 node_modules
+lib/
+db/*Z.sql
