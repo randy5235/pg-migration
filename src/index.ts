@@ -1,12 +1,13 @@
-'use strict';
+#! /usr/bin/env -S node
 
 import path from 'path';
 import pgPromise from 'pg-promise';
-import { readdir } from 'fs/promises';
-import { IClient } from 'pg-promise/typescript/pg-subset';
+import { readFile, readdir, FileHandle } from 'fs/promises';
+import { IClient, IConnectionParameters } from 'pg-promise/typescript/pg-subset';
+import { PathLike } from 'fs';
 
 const pgp = pgPromise({});
-const config = {
+const defaultConfig = {
   host: 'localhost', // 'localhost' is the default;
   port: 5432, // 5432 is the default;
   database: 'grocery_list',
@@ -15,8 +16,20 @@ const config = {
 
   // to auto-exit on idle, without having to shut-down the pool;
   // see https://github.com/vitaly-t/pg-promise#library-de-initialization
-  allowExitOnIdle: true
+  allowExitOnIdle: true,
+  patchPath: './db/'
 };
+
+const getConfig = async (path: PathLike | FileHandle) => {
+  let file;
+  try {
+    file = await readFile(path, {encoding: 'utf8'});
+  } catch (error) {
+    console.log('Falling back to defaultConfig');
+  }
+  let config = file ? JSON.parse(file) : defaultConfig;
+  return config;
+ };
 
 const getHistorySQL = `
     SELECT filename
@@ -24,8 +37,10 @@ const getHistorySQL = `
     ORDER By id ASC
     `;
 
-const db = pgp(config);
 
+
+
+const getDB = async (config: string | IConnectionParameters<IClient>) => pgp(config);
 
 const sqlDir = './db/';
 
@@ -33,18 +48,21 @@ const getFiles = async () => {
   try {
     let patchList = [];
     const data = await readdir(sqlDir);
-    data.forEach((element, index) => {
-      let name = path.parse(element).name;
-      if (name === 'migration_history') {
-        data.splice(index, 1);
-        patchList.unshift(element);
-        return;
-      }
-      if (name !== new Date(name).toISOString()) {
-        throw Error(`Bad file name ${element}, please use this format: \'2022-03-18T06:22:06.000Z\'`);
-      }
-    });
-    patchList.push(...data.sort());
+    if (data.length > 0) {
+
+      data.forEach((element, index) => {
+        let name = path.parse(element).name;
+        if (name === 'migration_history') {
+          data.splice(index, 1);
+          patchList.unshift(element);
+          return;
+        }
+        if (name !== new Date(name).toISOString()) {
+          throw Error(`Bad file name ${element}, please use this format: \'2022-03-18T06:22:06.000Z\'`);
+        }
+      });
+      patchList.push(...data.sort());
+    }
     return patchList;
   } catch (error) {
     throw error;
@@ -64,7 +82,7 @@ const getHistory = async (db: pgPromise.IDatabase<{}, IClient>): Promise<string[
   }
 };
 
-const applyPatchAndUpdateHistory = async (fileList: string[]) => {
+const applyPatchAndUpdateHistory = async (db: { tx: (arg0: (db: any) => Promise<void>) => Promise<any>; }, fileList: string[]) => {
   for (let i = 0; i < fileList.length; i++) {
       try {
       const gf = new pgp.QueryFile(`${sqlDir}${fileList[i]}`);
@@ -103,15 +121,18 @@ const compare = (dbHistory: string[], sqlPatches: string[]) => {
   return neededPatches;
 };
 
-async function main(db: pgPromise.IDatabase<{}, IClient>) {
+async function main(getDB: { (config: string | IConnectionParameters<IClient>): Promise<pgPromise.IDatabase<{}, IClient>>; (arg0: any): any; }) {
   try {
+    const config = await getConfig(process.argv[2]);
+    console.log("CONFIG: ", config);
+    const db = await getDB(config);
     const existingPatches = await getHistory(db);
     const getPatches = await getFiles();
     const neededPatches = compare(existingPatches, getPatches);
     
     if (neededPatches.length > 0) {
       console.info("Found unapplied patches: ", neededPatches);
-      await applyPatchAndUpdateHistory(neededPatches);
+      await applyPatchAndUpdateHistory(db, neededPatches);
     } else {
       console.info("Did not find any new SQL migrations or patches");
     }
@@ -120,4 +141,5 @@ async function main(db: pgPromise.IDatabase<{}, IClient>) {
   }
 }
 
-main(db);
+main(getDB);
+
