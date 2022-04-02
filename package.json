@@ -1,6 +1,6 @@
 {
   "name": "@randy5235/pg-migrations",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Tool to run postgres migrations ",
   "bin": {
     "pg-migrations": "./bin/index.js"
