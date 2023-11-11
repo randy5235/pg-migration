@@ -1,6 +1,6 @@
 {
   "name": "@randy5235/pg-migrations",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Tool to run postgres migrations ",
   "keywords": [
     "pg",
@@ -8,7 +8,7 @@
     "postgresql",
     "migrations"
   ],
-  "scripts": {
+  "scripts": {~
     "tsc": "tsc -p tsconfig.json",
     "prepublish": "npm run tsc"
   },
