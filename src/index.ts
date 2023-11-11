@@ -17,7 +17,7 @@ const defaultConfig = {
   // to auto-exit on idle, without having to shut-down the pool;
   // see https://github.com/vitaly-t/pg-promise#library-de-initialization
   allowExitOnIdle: true,
-  patchPath: './db/'
+  patchPath: './db/migrations/'
 };
 
 const getConfig = async (path: PathLike | FileHandle) => {
@@ -42,7 +42,7 @@ const getHistorySQL = `
 
 const getDB = async (config: string | IConnectionParameters<IClient>) => pgp(config);
 
-const sqlDir = './db/';
+const sqlDir = './db/migrations/';
 
 const getFiles = async () => {
   try {
@@ -140,6 +140,7 @@ async function main(getDB: { (config: string | IConnectionParameters<IClient>): 
     throw error;
   }
 }
-
-main(getDB);
+export const migrate = async () => {
+  await main(getDB);
+};;
 
