@@ -1,7 +1,7 @@
 import path from 'path';
 import { readdir } from 'fs/promises';
 
-export const getFiles = async (sqlDirectory) => {
+export const getFiles = async (sqlDirectory: string) => {
   try {
     let patchList = [];
     const data = await readdir(sqlDirectory);
