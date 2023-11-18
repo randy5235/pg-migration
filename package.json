@@ -8,7 +8,7 @@
     "postgresql",
     "migrations"
   ],
-  "scripts": {~
+  "scripts": {
     "tsc": "tsc -p tsconfig.json",
     "prepublish": "npm run tsc"
   },
