@@ -1,6 +1,6 @@
 {
   "name": "@randy5235/pg-migrations",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "description": "Tool to run postgres migrations ",
   "keywords": [
     "pg",
