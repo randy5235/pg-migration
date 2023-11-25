@@ -1,10 +1,11 @@
 import { pgp } from '.';
 
-export const applyPatchAndUpdateHistory = async (db: { tx: (arg0: (db: any) => Promise<void>) => Promise<any>; }, sqlDirectory:string , fileList: string[]) => {
+export const applyPatchAndUpdateHistory = async (db: { tx: (arg0: (db: any) => Promise<void>) => Promise<any>; }, sqlDirectory: string, fileList: string[]) => {
   for (let i = 0; i < fileList.length; i++) {
     try {
       const gf = new pgp.QueryFile(`${sqlDirectory}${fileList[i]}`);
       db.tx(async (db) => {
+        console.log("FILELIST: ", fileList[i]);
         if (fileList[i] !== 'migration_history.sql') {
           await db.query('SELECT filename FROM patch_history');
         }

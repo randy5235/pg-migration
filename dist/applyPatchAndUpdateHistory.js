@@ -16,6 +16,7 @@ const applyPatchAndUpdateHistory = (db, sqlDirectory, fileList) => __awaiter(voi
         try {
             const gf = new _1.pgp.QueryFile(`${sqlDirectory}${fileList[i]}`);
             db.tx((db) => __awaiter(void 0, void 0, void 0, function* () {
+                console.log("FILELIST: ", fileList[i]);
                 if (fileList[i] !== 'migration_history.sql') {
                     yield db.query('SELECT filename FROM patch_history');
                 }

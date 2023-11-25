@@ -43,7 +43,8 @@ async function main(getDB: { (config: string | IConnectionParameters<IClient>): 
     const config = await getConfig(process.argv[2]);
     console.log("CONFIG: ", config);
     const db = await getDB(config);
-    await applyPatchAndUpdateHistory(db, sqlDir, ['migration_history.sql']);
+    console.log("Here1:");
+    // await applyPatchAndUpdateHistory(db, sqlDir, ['migration_history.sql']);
     const existingPatches = await getHistory(db);
     const getPatches = await getFiles(sqlDir);
     const neededPatches = compare(existingPatches, getPatches);
