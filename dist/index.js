@@ -51,6 +51,7 @@ function main(getDB) {
             const config = yield getConfig(process.argv[2]);
             console.log("CONFIG: ", config);
             const db = yield getDB(config);
+            yield (0, applyPatchAndUpdateHistory_1.applyPatchAndUpdateHistory)(db, exports.sqlDir, ['migration_history.sql']);
             const existingPatches = yield (0, getHistory_1.getHistory)(db);
             const getPatches = yield (0, getFiles_1.getFiles)(exports.sqlDir);
             const neededPatches = (0, compare_1.compare)(existingPatches, getPatches);
