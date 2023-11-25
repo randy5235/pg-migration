@@ -26,7 +26,7 @@ const defaultConfig = {
 const getConfig = async (path: PathLike | FileHandle) => {
   let file;
   try {
-    file = await readFile(path, {encoding: 'utf8'});
+    file = await readFile(path, { encoding: 'utf8' });
   } catch (error) {
     console.log('Falling back to defaultConfig');
   }
@@ -43,10 +43,11 @@ async function main(getDB: { (config: string | IConnectionParameters<IClient>): 
     const config = await getConfig(process.argv[2]);
     console.log("CONFIG: ", config);
     const db = await getDB(config);
+    await applyPatchAndUpdateHistory(db, sqlDir, ['migration_history.sql']);
     const existingPatches = await getHistory(db);
     const getPatches = await getFiles(sqlDir);
     const neededPatches = compare(existingPatches, getPatches);
-    
+
     if (neededPatches.length > 0) {
       console.info("Found unapplied patches: ", neededPatches);
       await applyPatchAndUpdateHistory(db, sqlDir, neededPatches);
