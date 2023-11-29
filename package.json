@@ -21,7 +21,7 @@
   "author": "Randy Wressell <randy5235@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "pg-promise": "^10.11.1"
+    "pg-promise": "^10.15.4"
   },
   "publishConfig": {
     "access": "public"
