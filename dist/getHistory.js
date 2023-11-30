@@ -13,16 +13,12 @@ exports.getHistory = void 0;
 const getHistorySQL_1 = require("./getHistorySQL");
 const getHistory = (db) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // await applyPatchAndUpdateHistory(db, './db/migrations/', ['migration_history.sql']);
         const patchHistory = yield db.query(getHistorySQL_1.getHistorySQL);
         return patchHistory.map((element) => element.filename);
     }
     catch (error) {
-        if (error.message.includes("does not exist")) {
-            return [];
-        }
-        else {
-            throw Error('An error has occurred');
-        }
+        throw Error('An error has occurred');
     }
 });
 exports.getHistory = getHistory;
