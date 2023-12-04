@@ -7,7 +7,7 @@ export const applyPatchAndUpdateHistory = async (db: { tx: (arg0: (db: any) => P
       await db.tx(
         async (db) => {
           await db.query(gf);
-          await db.one(`INSERT INTO patch_history (filename) VALUES ('${fileList[i]}')`);
+          await db.query(`INSERT INTO patch_history (filename) VALUES ('${fileList[i]}')`);
         });
       console.log(`Successfully Applied patch ${fileList[i]}`);
     }

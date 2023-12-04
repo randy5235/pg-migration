@@ -40,8 +40,12 @@ async function main(getDB: { (config: string | IConnectionParameters<IClient>): 
   try {
     const config = await getConfig(process.argv[2]);
     const db = await getDB(config);
-    await applyPatchAndUpdateHistory(db, sqlDir, ['migration_history.sql']);
     const existingPatches = await getHistory(db);
+    if (!existingPatches.includes('migration_history.sql')) {
+      const gf = new pgp.QueryFile(`${sqlDir}migration_history.sql}`);
+      await db.query(['migration_history.sql']);
+      existingPatches.unshift('migration_history.sql');
+    };
     const getPatches = await getFiles(sqlDir);
     const neededPatches = compare(existingPatches, getPatches);
 

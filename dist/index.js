@@ -49,8 +49,13 @@ function main(getDB) {
         try {
             const config = yield getConfig(process.argv[2]);
             const db = yield getDB(config);
-            yield (0, applyPatchAndUpdateHistory_1.applyPatchAndUpdateHistory)(db, exports.sqlDir, ['migration_history.sql']);
             const existingPatches = yield (0, getHistory_1.getHistory)(db);
+            if (!existingPatches.includes('migration_history.sql')) {
+                const gf = new exports.pgp.QueryFile(`${exports.sqlDir}migration_history.sql}`);
+                yield db.query(['migration_history.sql']);
+                existingPatches.unshift('migration_history.sql');
+            }
+            ;
             const getPatches = yield (0, getFiles_1.getFiles)(exports.sqlDir);
             const neededPatches = (0, compare_1.compare)(existingPatches, getPatches);
             if (neededPatches.length > 0) {
