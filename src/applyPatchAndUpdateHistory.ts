@@ -6,8 +6,8 @@ export const applyPatchAndUpdateHistory = async (db: { tx: (arg0: (db: any) => P
       const gf = new pgp.QueryFile(`${sqlDirectory}${fileList[i]}`);
       await db.tx(
         async (db) => {
-          await db.query(gf);
-          await db.query(`INSERT INTO patch_history (filename) VALUES ('${fileList[i]}')`);
+          await db.one(gf);
+          await db.one(`INSERT INTO patch_history (filename) VALUES ('${fileList[i]}')`);
         });
       console.log(`Successfully Applied patch ${fileList[i]}`);
     }

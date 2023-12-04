@@ -16,8 +16,8 @@ const applyPatchAndUpdateHistory = (db, sqlDirectory, fileList) => __awaiter(voi
         for (let i = 0; i < fileList.length; i++) {
             const gf = new _1.pgp.QueryFile(`${sqlDirectory}${fileList[i]}`);
             yield db.tx((db) => __awaiter(void 0, void 0, void 0, function* () {
-                yield db.query(gf);
-                yield db.query(`INSERT INTO patch_history (filename) VALUES ('${fileList[i]}')`);
+                yield db.one(gf);
+                yield db.one(`INSERT INTO patch_history (filename) VALUES ('${fileList[i]}')`);
             }));
             console.log(`Successfully Applied patch ${fileList[i]}`);
         }
