@@ -12,8 +12,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.applyPatchAndUpdateHistory = void 0;
 const _1 = require(".");
 const applyPatchAndUpdateHistory = (db, sqlDirectory, fileList) => __awaiter(void 0, void 0, void 0, function* () {
-    for (let i = 0; i < fileList.length; i++) {
-        try {
+    try {
+        for (let i = 0; i < fileList.length; i++) {
             const gf = new _1.pgp.QueryFile(`${sqlDirectory}${fileList[i]}`);
             yield db.tx((db) => __awaiter(void 0, void 0, void 0, function* () {
                 yield db.query(gf);
@@ -21,9 +21,9 @@ const applyPatchAndUpdateHistory = (db, sqlDirectory, fileList) => __awaiter(voi
             }));
             console.log(`Successfully Applied patch ${fileList[i]}`);
         }
-        catch (_a) {
-            throw Error(`Error applying ${fileList[i]} patch`);
-        }
+    }
+    catch (error) {
+        throw error;
     }
 });
 exports.applyPatchAndUpdateHistory = applyPatchAndUpdateHistory;

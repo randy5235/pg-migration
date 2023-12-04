@@ -1,9 +1,7 @@
-#! /usr/bin/env -S node
-
 import pgPromise from 'pg-promise';
-import { readFile, FileHandle } from 'fs/promises';
-import { IClient, IConnectionParameters } from 'pg-promise/typescript/pg-subset';
-import { PathLike } from 'fs';
+import { readFile, type FileHandle } from 'fs/promises';
+import type { IClient, IConnectionParameters } from 'pg-promise/typescript/pg-subset';
+import type { PathLike } from 'fs';
 import { getFiles } from './getFiles';
 import { getHistory } from './getHistory';
 import { applyPatchAndUpdateHistory } from './applyPatchAndUpdateHistory';
@@ -41,9 +39,7 @@ export const sqlDir = './db/migrations/';
 async function main(getDB: { (config: string | IConnectionParameters<IClient>): Promise<pgPromise.IDatabase<{}, IClient>>; (arg0: any): any; }) {
   try {
     const config = await getConfig(process.argv[2]);
-    console.log("CONFIG: ", config);
     const db = await getDB(config);
-    console.log("Here1:");
     await applyPatchAndUpdateHistory(db, sqlDir, ['migration_history.sql']);
     const existingPatches = await getHistory(db);
     const getPatches = await getFiles(sqlDir);
@@ -61,5 +57,7 @@ async function main(getDB: { (config: string | IConnectionParameters<IClient>): 
 }
 export const migrate = async () => {
   await main(getDB);
-};;
+
+};
+
 

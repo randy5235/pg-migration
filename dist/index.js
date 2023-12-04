@@ -1,4 +1,3 @@
-#! /usr/bin/env -S node
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -49,9 +48,7 @@ function main(getDB) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const config = yield getConfig(process.argv[2]);
-            console.log("CONFIG: ", config);
             const db = yield getDB(config);
-            console.log("Here1:");
             yield (0, applyPatchAndUpdateHistory_1.applyPatchAndUpdateHistory)(db, exports.sqlDir, ['migration_history.sql']);
             const existingPatches = yield (0, getHistory_1.getHistory)(db);
             const getPatches = yield (0, getFiles_1.getFiles)(exports.sqlDir);
@@ -73,4 +70,3 @@ const migrate = () => __awaiter(void 0, void 0, void 0, function* () {
     yield main(getDB);
 });
 exports.migrate = migrate;
-;
