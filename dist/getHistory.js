@@ -15,6 +15,9 @@ const getHistory = (db) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // await applyPatchAndUpdateHistory(db, './db/migrations/', ['migration_history.sql']);
         const patchHistory = yield db.query(getHistorySQL_1.getHistorySQL);
+        if (patchHistory.length === 0) {
+            return [];
+        }
         return patchHistory.map((element) => element.filename);
     }
     catch (error) {
